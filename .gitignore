@@ -1,0 +1,29 @@
+# Build trees
+/build/
+/build-*/
+/out/
+CMakeUserPresets.json
+
+# Tooling caches and generated files
+/.cache/
+compile_commands.json
+
+# Compiler and linker output
+*.o
+*.obj
+*.a
+*.so
+*.d
+core
+core.*
+
+# Profiling output
+perf.data*
+*.svg.tmp
+
+# Editors and OS files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
