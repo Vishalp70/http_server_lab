@@ -12,11 +12,11 @@ project and is not production-ready.
 
 ## Requirements
 
-- Linux (Ubuntu 22.04/24.04 or WSL2 with one of them). CMake refuses to
-  configure on other operating systems.
-- A C++17 compiler (GCC or Clang), CMake, Git, `make`.
-- Network access during the first configure: CMake downloads GoogleTest
-  v1.15.2 from GitHub. For offline builds see "Offline GoogleTest" below.
+* Linux (Ubuntu 22.04/24.04 or WSL2 with one of them). CMake refuses to
+configure on other operating systems.
+* A C++17 compiler (GCC or Clang), CMake, Git, `make`.
+* Network access during the first configure: CMake downloads GoogleTest
+v1.15.2 from GitHub. For offline builds see "Offline GoogleTest" below.
 
 Install on Ubuntu / WSL2:
 
@@ -44,32 +44,32 @@ ctest --preset release            # run all tests
 ./build/release/src/httpd --port 8080
 ```
 
-| Preset       | Build type | Notes                                          |
-|--------------|------------|------------------------------------------------|
-| `debug`      | Debug      | Assertions on, `-g`                            |
-| `release`    | Release    | `-O2 -DNDEBUG`; use this for benchmarks later  |
-| `asan-ubsan` | Debug      | AddressSanitizer + UndefinedBehaviorSanitizer  |
-| `tsan`       | Debug      | ThreadSanitizer                                |
+|Preset|Build type|Notes|
+|-|-|-|
+|`debug`|Debug|Assertions on, `-g`|
+|`release`|Release|`-O2 -DNDEBUG`; use this for benchmarks later|
+|`asan-ubsan`|Debug|AddressSanitizer + UndefinedBehaviorSanitizer|
+|`tsan`|Debug|ThreadSanitizer|
 
-All presets enable `-Werror` (`SRV_WARNINGS_AS_ERRORS=ON`). Build trees go to
+All presets enable `-Werror` (`SRV\_WARNINGS\_AS\_ERRORS=ON`). Build trees go to
 `build/<preset>/`.
 
 ## Build without presets
 
 ```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -DCMAKE\_BUILD\_TYPE=Release
 cmake --build build -j
-cd build && ctest --output-on-failure && cd ..
+cd build \&\& ctest --output-on-failure \&\& cd ..
 ./build/src/httpd --help
 ```
 
 Add `-G Ninja` to the first command if Ninja is installed. Without
-`-DCMAKE_BUILD_TYPE`, Release is used.
+`-DCMAKE\_BUILD\_TYPE`, Release is used.
 
 ## Running `httpd`
 
 ```
-Usage: httpd [OPTIONS]
+Usage: httpd \[OPTIONS]
 
   -p, --port PORT   TCP port to listen on, 0-65535 (0 = ephemeral). Default: 8080
   -h, --help        Show this help and exit.
@@ -81,10 +81,10 @@ decimal digits in the range 0 to 65535. Signs, spaces, hex, empty values and
 out-of-range numbers are rejected. Unknown options, positional arguments and a
 repeated `--port` are errors too.
 
-| Exit status | Meaning                                             |
-|-------------|-----------------------------------------------------|
-| 0           | Success, including `--help` and `--version`         |
-| 2           | Invalid command line (message printed to stderr)    |
+|Exit status|Meaning|
+|-|-|
+|0|Success, including `--help` and `--version`|
+|2|Invalid command line (message printed to stderr)|
 
 ```bash
 ./build/release/src/httpd --version          # httpd 0.1.0
@@ -96,19 +96,19 @@ repeated `--port` are errors too.
 
 `ctest` runs two groups:
 
-- GoogleTest unit tests for the command-line parser (`tests/unit/`).
-- Smoke tests that run the real `httpd` binary (`--help`, `--version`,
-  a valid port, an invalid port). These check the printed text; the exit
-  status 2 for invalid input is checked by the manual command above.
+* GoogleTest unit tests for the command-line parser (`tests/unit/`).
+* Smoke tests that run the real `httpd` binary (`--help`, `--version`,
+a valid port, an invalid port). These check the printed text; the exit
+status 2 for invalid input is checked by the manual command above.
 
 ## Sanitizers
 
 ```bash
-cmake --preset asan-ubsan && cmake --build --preset asan-ubsan -j && ctest --preset asan-ubsan
-cmake --preset tsan       && cmake --build --preset tsan       -j && ctest --preset tsan
+cmake --preset asan-ubsan \&\& cmake --build --preset asan-ubsan -j \&\& ctest --preset asan-ubsan
+cmake --preset tsan       \&\& cmake --build --preset tsan       -j \&\& ctest --preset tsan
 ```
 
-Without presets: `-DSRV_SANITIZER=asan-ubsan` or `-DSRV_SANITIZER=tsan`.
+Without presets: `-DSRV\_SANITIZER=asan-ubsan` or `-DSRV\_SANITIZER=tsan`.
 ASan and TSan cannot be combined. Sanitizer builds are for correctness
 testing only and must never be used for benchmarks. If a TSan binary aborts at
 startup with a memory-mapping error, that is a known incompatibility between
@@ -116,22 +116,22 @@ some kernels and the sanitizer runtime, not a project bug.
 
 ## CMake options
 
-| Option                    | Default   | Meaning                                              |
-|---------------------------|-----------|------------------------------------------------------|
-| `CMAKE_BUILD_TYPE`        | `Release` | `Debug` or `Release`                                 |
-| `SRV_BUILD_TESTS`         | `ON`      | Build unit and smoke tests (fetches GoogleTest)      |
-| `SRV_WARNINGS_AS_ERRORS`  | `OFF`     | Add `-Werror` to the project's own targets           |
-| `SRV_SANITIZER`           | `none`    | `none`, `asan-ubsan` or `tsan`                       |
-| `SRV_USE_SYSTEM_GTEST`    | `OFF`     | Use an installed GoogleTest instead of fetching one  |
+|Option|Default|Meaning|
+|-|-|-|
+|`CMAKE\_BUILD\_TYPE`|`Release`|`Debug` or `Release`|
+|`SRV\_BUILD\_TESTS`|`ON`|Build unit and smoke tests (fetches GoogleTest)|
+|`SRV\_WARNINGS\_AS\_ERRORS`|`OFF`|Add `-Werror` to the project's own targets|
+|`SRV\_SANITIZER`|`none`|`none`, `asan-ubsan` or `tsan`|
+|`SRV\_USE\_SYSTEM\_GTEST`|`OFF`|Use an installed GoogleTest instead of fetching one|
 
 ### Offline GoogleTest
 
 ```bash
 sudo apt install -y libgtest-dev
-cmake -S . -B build -DSRV_USE_SYSTEM_GTEST=ON
+cmake -S . -B build -DSRV\_USE\_SYSTEM\_GTEST=ON
 ```
 
-Or skip tests entirely with `-DSRV_BUILD_TESTS=OFF`. Do not combine the system
+Or skip tests entirely with `-DSRV\_BUILD\_TESTS=OFF`. Do not combine the system
 GoogleTest with `tsan`: the installed library is not TSan-instrumented, which
 can produce false reports.
 
@@ -142,12 +142,12 @@ CMakeLists.txt          project options, platform guard, subdirectories
 CMakePresets.json       debug, release, asan-ubsan, tsan
 cmake/                  ProjectOptions.cmake (warnings), Sanitizers.cmake
 src/
-  CMakeLists.txt        srv_cli library + httpd executable, version header
+  CMakeLists.txt        srv\_cli library + httpd executable, version header
   app/                  cli.{hpp,cpp} (argument parsing), main.cpp
   common/               config.hpp, version.hpp.in
 tests/
   CMakeLists.txt        GoogleTest setup, unit and smoke tests
-  unit/cli_test.cpp
+  unit/cli\_test.cpp
 ```
 
 Platform note: the code in `src/app` and `src/common` is portable standard
@@ -161,3 +161,18 @@ Later milestones add the sans-I/O HTTP core, the three servers, the
 conformance test suite, and the benchmark harness. Targets for a separate
 client and for benchmarks are intentionally not created yet; they arrive with
 the code they exercise.
+
+
+
+•	Thread-per-connection is simplest and gives natural blocking code, but costs one stack and one scheduler entity per connection and hits OS limits before the others.
+
+•	The fixed pool caps resource use but couples concurrency to worker count under keep-alive.
+
+•	Single-threaded epoll avoids per-connection threads and locks, but one slow handler (for example a large /cpu request) blocks every connection on that loop. This is the reason /cpu exists and the reason E1 and E3 are listed.
+
+•	The shared Session costs one small abstraction but removes the largest correctness risk (three divergent protocol implementations).
+
+•	Level-triggered epoll costs some extra wakeups versus edge-triggered but is much harder to get wrong.
+
+
+
