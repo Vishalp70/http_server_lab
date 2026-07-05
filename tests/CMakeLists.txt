@@ -16,9 +16,16 @@ else()
 endif()
 
 # --- Unit tests -------------------------------------------------------------
-add_executable(srv_unit_tests unit/cli_test.cpp)
-target_link_libraries(srv_unit_tests PRIVATE srv_cli srv_project_options GTest::gtest_main)
+add_executable(srv_unit_tests unit/cli_test.cpp unit/http_test.cpp)
+target_link_libraries(srv_unit_tests PRIVATE srv_cli srv_http srv_project_options GTest::gtest_main)
 gtest_discover_tests(srv_unit_tests)
+
+add_executable(srv_tcp_integration_tests integration/tcp_server_test.cpp)
+target_link_libraries(srv_tcp_integration_tests PRIVATE srv_net srv_http srv_project_options GTest::gtest_main)
+target_compile_definitions(srv_tcp_integration_tests PRIVATE
+  HTTPD_PATH="$<TARGET_FILE:httpd>")
+add_dependencies(srv_tcp_integration_tests httpd)
+gtest_discover_tests(srv_tcp_integration_tests)
 
 # --- Smoke tests of the real executable -------------------------------------
 add_test(NAME httpd_help COMMAND httpd --help)
@@ -27,10 +34,6 @@ set_tests_properties(httpd_help PROPERTIES PASS_REGULAR_EXPRESSION "Usage: httpd
 add_test(NAME httpd_version COMMAND httpd --version)
 set_tests_properties(httpd_version PROPERTIES
   PASS_REGULAR_EXPRESSION "httpd ${PROJECT_VERSION}")
-
-add_test(NAME httpd_starts COMMAND httpd --port 9090)
-set_tests_properties(httpd_starts PROPERTIES
-  PASS_REGULAR_EXPRESSION "configuration OK \\(port 9090\\)")
 
 # With PASS_REGULAR_EXPRESSION CTest ignores the exit status, so this checks
 # the diagnostic text; the exit status (2) is checked by hand in the README.

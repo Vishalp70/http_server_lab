@@ -76,6 +76,59 @@ TEST(ParseCli, PortZeroIsAllowed) {
   EXPECT_EQ(r.config.port, 0);
 }
 
+TEST(ParseCli, BindAddressOption) {
+  EXPECT_EQ(parse_cli(Args{"--bind", "0.0.0.0"}).config.bind_address, "0.0.0.0");
+  EXPECT_EQ(parse_cli(Args{"--bind=192.0.2.1"}).config.bind_address, "192.0.2.1");
+  EXPECT_EQ(parse_cli({}).config.bind_address, ServerConfig::kDefaultBindAddress);
+}
+
+TEST(ParseCli, RejectsMissingEmptyOrDuplicateBindAddress) {
+  EXPECT_EQ(parse_cli(Args{"--bind"}).action, CliAction::kError);
+  EXPECT_EQ(parse_cli(Args{"--bind="}).action, CliAction::kError);
+  EXPECT_EQ(parse_cli(Args{"--bind", "127.0.0.1", "--bind", "0.0.0.0"}).action,
+            CliAction::kError);
+}
+
+TEST(ParseCli, AcceptsThreadPerConnectionMode) {
+  EXPECT_EQ(parse_server_mode("thread-per-connection"),
+            std::optional<ServerMode>(ServerMode::kThreadPerConnection));
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-per-connection"}).action, CliAction::kRun);
+  EXPECT_EQ(parse_cli(Args{"--mode=thread-per-connection"}).config.mode,
+            ServerMode::kThreadPerConnection);
+}
+
+TEST(ParseCli, AcceptsThreadPoolMode) {
+  EXPECT_EQ(parse_server_mode("thread-pool"), std::optional<ServerMode>(ServerMode::kThreadPool));
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-pool"}).config.mode, ServerMode::kThreadPool);
+}
+
+TEST(ParseCli, AcceptsEpollMode) {
+  EXPECT_EQ(parse_server_mode("epoll"), std::optional<ServerMode>(ServerMode::kEpoll));
+  EXPECT_EQ(parse_cli(Args{"--mode", "epoll"}).config.mode, ServerMode::kEpoll);
+}
+
+TEST(ParseCli, RejectsUnavailableOrDuplicateModes) {
+  EXPECT_EQ(parse_cli(Args{"--mode"}).action, CliAction::kError);
+  EXPECT_EQ(parse_cli(Args{"--mode", "unknown-mode"}).action, CliAction::kError);
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-per-connection", "--mode",
+                          "thread-per-connection"}).action,
+            CliAction::kError);
+}
+
+TEST(ParseCli, ParsesBoundedThreadPoolWorkerCount) {
+  EXPECT_EQ(parse_worker_count("1"), std::optional<std::uint16_t>(1));
+  EXPECT_EQ(parse_worker_count("64"), std::optional<std::uint16_t>(64));
+  EXPECT_FALSE(parse_worker_count("0"));
+  EXPECT_FALSE(parse_worker_count("65"));
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-pool", "--workers", "8"}).config.worker_count,
+            8);
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-pool", "--workers=8"}).action, CliAction::kRun);
+  EXPECT_EQ(parse_cli(Args{"--workers", "8"}).action, CliAction::kError);
+  EXPECT_EQ(parse_cli(Args{"--mode", "thread-pool", "--workers", "8", "--workers", "2"})
+                .action,
+            CliAction::kError);
+}
+
 // ---- parse_cli: help and version --------------------------------------------
 
 TEST(ParseCli, HelpShortAndLong) {
@@ -149,6 +202,8 @@ TEST(Text, UsageMentionsAllOptions) {
   EXPECT_NE(usage.find("--port"), std::string::npos);
   EXPECT_NE(usage.find("--help"), std::string::npos);
   EXPECT_NE(usage.find("--version"), std::string::npos);
+  EXPECT_NE(usage.find("--bind"), std::string::npos);
+  EXPECT_NE(usage.find("--mode"), std::string::npos);
   EXPECT_NE(usage.find("8080"), std::string::npos);
 }
 
