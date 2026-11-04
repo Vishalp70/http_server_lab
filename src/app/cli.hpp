@@ -33,6 +33,8 @@ CliResult parse_cli(const std::vector<std::string>& args);
 // Strict port parser: decimal digits only, value 0..65535. Rejects empty
 // text, signs, whitespace, trailing characters and overflow.
 std::optional<std::uint16_t> parse_port(std::string_view text);
+std::optional<ServerMode> parse_server_mode(std::string_view text);
+std::optional<std::uint16_t> parse_worker_count(std::string_view text);
 
 std::string usage_text();
 std::string version_text();
