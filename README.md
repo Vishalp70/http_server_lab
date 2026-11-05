@@ -240,7 +240,3 @@ responses. This is one WSL2 run, not a general performance claim. Results can ch
 WSL scheduling, worker count, and workload. Full trial data and metadata are in
 [the recorded JSON result](benchmark/results/ubuntu22.04-wsl2-gcc11.4-2026-10-26.json).
 
-### Resume bullets
-
-- Implemented a C++17 HTTP server with thread-per-connection, bounded thread-pool, and level-triggered epoll modes using shared request handling and RAII socket ownership.
-- Added a bounded HTTP/1.1 GET subset, parser and integration tests, and a benchmark harness reporting latency percentiles, throughput, CPU, memory, and overload responses.
